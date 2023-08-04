@@ -1,0 +1,49 @@
+// Function to find the peak
+double findPeak(TH1F* hist) {
+    TF1* fitFunc = new TF1("fitFunc", "gaus", hist->GetBinCenter(1), hist->GetBinCenter(hist->GetNbinsX()));
+    hist->Fit(fitFunc, "Q");
+    double peak = fitFunc->GetParameter(1);
+    return peak;
+}
+
+class PeakFinderWidget : public QWidget {
+    Q_OBJECT
+public:
+    PeakFinderWidget(QWidget* parent = nullptr) : QWidget(parent)
+     {
+        // Set up the layout
+        QVBoxLayout *l = new QVBoxLayout;
+        
+        l->addWidget(peakButton = new QPushButton("&Find Peak", this));
+        // Connect its clicked signal to the slot
+        
+        connect(peakButton, &QPushButton::clicked, this, &PeakFinderWidget::findPeakButtonClicked);
+
+    }
+
+public slots:
+    void findPeakButtonClicked() {
+        // Create histogram with ROOT
+        TH1F* hist = CreateHistogram(100, 0, 100);
+        double peak = FindPeak(hist);
+
+        // Print the peak value
+        qDebug() << "Peak Energy: " << peak;
+
+        // Clean up memory
+        delete hist;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    // Create ROOT application
+    TApplication app("ROOT Application", &argc, argv);
+
+    // Create the main window and show it
+    QApplication qtApp(argc, argv);
+    PeakFinderWidget peakFinderWidget;
+    peakFinderWidget.show();
+
+    // Run the application
+    return app.Run();
+}
